@@ -20,7 +20,7 @@ class DataIngestion:
         logging.info('Data ingestion method starts')
         
         try:
-            df=pd.read_csv(os.path.join('notebooks/Data','delhi_aqi.csv'))
+            df=pd.read_csv(os.path.join('notebooks/Data','AQI_DELHI.csv'))
             logging.info('Dataset read as pandas Dataframe')
             os.makedirs(os.path.dirname(self.ingestion_config.raw_data_path),exist_ok=True)
             df.to_csv(self.ingestion_config.raw_data_path)
