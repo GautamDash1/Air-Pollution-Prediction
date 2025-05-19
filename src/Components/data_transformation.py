@@ -9,13 +9,13 @@ import pandas as pd
 from src.logger import logging
 from src.exception import CustomException
 from src.utils import save_object
+from notebooks.transform import data_corr_coef
 
 import sys,os
 from dataclasses import dataclass
 
 @dataclass
 class DataTransformationConfig:
-    def __init__(self):
         preprocessor_obj_file_path=os.path.join('artifacts','preprocessor.pkl')
 
 class DataTransformation:
@@ -26,7 +26,8 @@ class DataTransformation:
         try:
             logging.info('Data Transformation initiated')
 
-            numerical_cols=['co','no','no2','so2','pm2_5','pm10']
+            numerical_cols=['NO','NO2','NOx','NH3','SO2','CO','Ozone','Benzene','Toluene','RH','WS','WD','SR','BP','AT','RF','TOT-RF']
+
 
             num_pipeline=Pipeline(
                 steps=[
@@ -44,6 +45,7 @@ class DataTransformation:
         except Exception as e:
             logging.info('Error occured at data transformation')
             raise CustomException(e,sys)
+        return preprocessor
     def initiate_data_transformation(self,train_data_path,test_data_path):
         try:
             train_df=pd.read_csv(train_data_path)
@@ -54,15 +56,21 @@ class DataTransformation:
 
             logging.info('Obtaining preprocessing object')
             preprocessing_obj=self.get_data_transformation_object()
-
-            drop_column=['o3','nh3']
+            target_column='AQI'
+            drop_column=data_corr_coef()
+            drop_column.append(target_column)
 
             input_feature_train_df=train_df.drop(columns=drop_column,axis=1)
-            input_feature_test_df=test_df.drop(columns=drop_column,axis=1)
-            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df)
-            input_feature_test_arr=preprocessing_obj.fit_transform(input_feature_test_df)
+            target_feature_train_df=train_df[target_column]
 
-            train_arr=np.c_[input_feature_train_arr]
+
+            input_feature_test_df=test_df.drop(columns=drop_column,axis=1)
+            target_feature_test_df=test_df[target_column]
+
+            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df)
+            input_feature_test_arr=preprocessing_obj.transform(input_feature_test_df)
+
+            train_arr=np.c_[input_feature_train_arr,np.array(target_feature_train_df)]
             test_arr=np.c_[input_feature_test_arr]
 
             save_object(
