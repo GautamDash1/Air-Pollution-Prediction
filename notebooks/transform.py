@@ -10,10 +10,10 @@ def data_corr_coef():
     aqi_correlations = data.corr()['AQI'].drop('AQI')
 
     threshold = 0.80
-
+    cols1=[]
     drop_cols = aqi_correlations[aqi_correlations.abs() > threshold].index.tolist()
     selected_features = [col for col in data.columns if col not in drop_cols and col != 'AQI']
 
 
-    return drop_cols
+    return cols1
 drop=data_corr_coef()
